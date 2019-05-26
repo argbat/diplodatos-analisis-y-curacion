@@ -1,0 +1,192 @@
+---
+title: "Ejercicios sobre la dataset de Vuelos en Nueva York"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Inicializacion y limpieza.
+
+Carga del dataset.
+
+```{r carga}
+library(nycflights13)
+fligths<-nycflights13::flights
+```
+
+Nombres de columnas.
+
+```{r columnas}
+names(flights)
+```
+
+Medidas de resumen del dataset.
+
+```{r resumen}
+summary(fligths)
+```
+
+Vemos que hay columnas con valores NA.
+
+Contamos cantidad de observaciones.
+
+```{r}
+nrow(flights)
+```
+
+Contamos cantidad de observaciones que tengan almenos un atributo en NA.
+
+```{r}
+sum(!complete.cases(flights))
+```
+
+Vemos que porcentaje del total de observaciones son las incompletas (tienen NA en algun atributo).
+
+```{r}
+(sum(!complete.cases(flights)) / nrow(flights)) * 100
+```
+
+Son casi un 3% de las observaciones. Vamos a eliminarlas.
+
+```{r}
+flights_clean <- na.omit(flights)
+```
+
+Chequemos si las filas eliminadas fueron las espeadas.
+
+```{r}
+nrow(flights) - sum(!complete.cases(flights)) == nrow(flights_clean)
+```
+
+## Ejercicios
+
+### Que arribaron con un retraso de mas de dos horas.
+
+Filtro.
+
+```{r}
+flights_1 <- flights_clean[flights_clean$arr_delay < -2,]
+```
+
+Contamos observaciones que cumplen el filtro.
+
+```{r}
+nrow(flights_1)
+```
+
+Mostramos primeros 5, solo columnas de datos identificatorios del vuelo.
+
+```{r}
+flights_1[1:5, which(names(flights_1) %in% c("carrier","flight","sched_arr_time","arr_time"))]
+```
+
+
+### Volaron hacia Houston (IAH o HOU)
+
+Filtro.
+
+```{r}
+flights_2 <- flights_clean[flights_clean$dest %in% c("HOU","IAH"),]
+```
+
+Contamos observaciones que cumplen el filtro.
+
+```{r}
+nrow(flights_2)
+```
+
+Mostramos primeros 5, solo columnas de datos identificatorios del vuelo.
+
+```{r}
+flights_2[1:5, which(names(flights_2) %in% c("carrier","flight","dest"))]
+```
+
+### Fueron operados por United, American o Delta.
+
+Listado de carriers en el dataset.
+
+```{r}
+unique(flights_clean$carrier)
+```
+
+Filtro.
+
+```{r}
+flights_3 <- flights_clean[flights_clean$carrier %in% c("UA","AA", "DL"),]
+```
+
+Contamos observaciones que cumplen el filtro.
+
+```{r}
+nrow(flights_3)
+```
+
+Mostramos primeros 5, solo columnas de datos identificatorios del vuelo.
+
+```{r}
+flights_3[1:5, which(names(flights_3) %in% c("carrier","flight","dest"))]
+```
+
+### Salieron en Verano (Julio, Agosto y Septiembre)
+
+Filtro.
+
+```{r}
+flights_4 <- flights_clean[flights_clean$month %in% c(9, 10, 11),]
+```
+
+Contamos observaciones que cumplen el filtro.
+
+```{r}
+nrow(flights_4)
+```
+
+Mostramos primeros 5, solo columnas de datos identificatorios del vuelo.
+
+```{r}
+flights_4[1:5, which(names(flights_4) %in% c("carrier","flight","month"))]
+```
+
+### Arrivaron mas de dos horas tarde, pero salieron bien.
+
+Filtro.
+
+```{r}
+flights_5 <- flights_clean[flights_clean$dep_delay == 0 & flights_clean$arr_delay > 2,]
+```
+
+Contamos observaciones que cumplen el filtro.
+
+```{r}
+nrow(flights_5)
+```
+
+Mostramos primeros 5, solo columnas de datos identificatorios del vuelo.
+
+```{r}
+flights_5[1:5, which(names(flights_5) %in% c("carrier","flight","dep_time","sched_arr_time","arr_time"))]
+```
+
+### Salieron entre medianoche y las 6 am.
+
+Filtro.
+
+```{r}
+flights_6 <- flights_clean[flights_clean$dep_time >= 0000 & flights_clean$dep_time <= 0600,]
+```
+
+Contamos observaciones que cumplen el filtro.
+
+```{r}
+nrow(flights_6)
+```
+
+Mostramos primeros 5, solo columnas de datos identificatorios del vuelo.
+
+```{r}
+flights_6[1:5, which(names(flights_6) %in% c("carrier","flight","dep_time"))]
+```

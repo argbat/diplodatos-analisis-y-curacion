@@ -9,6 +9,7 @@ En la "notebooks" estan los scripts que resuleven los ejercicios.
 
 ### Como ejecutar los ejercicios.
 En un sistema Unix-like:
+
 $ cd <directorio de descarga del repositorio>
   
 $ conda create -n diplodatos python=3.6
@@ -18,8 +19,11 @@ $ conda activate diplodatos
 $ jupyter notebook
 
 Una vez en la notebook:
+
 Abrir la carpeta "notebooks"
+
 Abrir la notebook "Ejercicios-Tablas-Resueltos.ipynb"
+
 Abrir la notebook "Ejercicios-Limpieza-Kickstarter-Resueltos.ipynb"
 
 ## Ejercicios de ultima clases (R).

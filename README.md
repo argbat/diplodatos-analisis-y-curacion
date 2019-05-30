@@ -10,7 +10,7 @@ En la "notebooks" estan los scripts que resuleven los ejercicios.
 ### Como ejecutar los ejercicios.
 En un sistema Unix-like:
 
-$ cd <directorio de descarga del repositorio>
+$ cd "directorio de descarga del repositorio"
   
 $ conda create -n diplodatos python=3.6
 

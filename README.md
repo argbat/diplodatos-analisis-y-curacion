@@ -32,3 +32,5 @@ y "nycflights13" (deberia venir por defecto).
 
 ### Como ejecutar los ejercicios.
 Abrir en RStudio el archivo "ejercios-resueltos-r-vuelos-ny.Rmd".
+Abrir en RStudio el archivo "ejercicios-resultos-r-practico-1".
+Abrir en RStudio el archivo "ejercicios-resultos-r-practico-2".

@@ -25,6 +25,11 @@ Removemos priemra columna que es un atributo de identificacion.
 data <- data[-1]
 ```
 
+Veo la cantidad de observaciones
+```{r}
+nrow(data)
+```
+
 Medidas de resumen del dataset.
 ``` {r}
 summary(data)
@@ -83,8 +88,8 @@ data_minmax_test_pred <- knn(train=data_n_minmax_train, test=data_n_minmax_test,
 
 Normalizamos los valores con z-score
 ```{r echo=TRUE}
-normalize_minmax <- function(x) {
-  return (as.dataframe(scale(x)))
+normalize_std <- function(x) {
+  return (as.data.frame(scale(x)))
 }
 ```
 
@@ -156,4 +161,32 @@ Observamos que con k=15 y k=21 se obtienen los mejores valores en la matriz de c
 
 ## Ejercicio 3.
 ### Mientras termina su merecido cafe verifique si el resultado cambia utilizando paciente elegidos aleatoriamente para el conjunto de validacion.
+Tomamos un conjunto de pacientes aleatoriamente del data set para nuestro nuevo conjunto de validacion
+```{r echo=TRUE}
+sample_index = sample(c(1:569), size=100)
+data_n_std_test_random <- data_n_std[sample_index, ]
+data_n_std_test_random[1:5,]
+```
+
+Aplicamos knn pero para data_n_std_test_random
+```{r echo=TRUE}
+library(class)
+data_std_test_pred_random_k1 <- knn(train=data_n_std_train, test=data_n_std_test_random, cl=data_n_std_train_labels, k=1)
+data_std_test_pred_random_k5 <- knn(train=data_n_std_train, test=data_n_std_test_random, cl=data_n_std_train_labels, k=5)
+data_std_test_pred_random_k11 <- knn(train=data_n_std_train, test=data_n_std_test_random, cl=data_n_std_train_labels, k=11)
+data_std_test_pred_random_k15 <- knn(train=data_n_std_train, test=data_n_std_test_random, cl=data_n_std_train_labels, k=15)
+data_std_test_pred_random_k21 <- knn(train=data_n_std_train, test=data_n_std_test_random, cl=data_n_std_train_labels, k=21)
+```
+
+Evaluamos datos predicho contra datos reales tanto para minmax como para z-score.
+```{r echo=TRUE}
+library(gmodels)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_random_k1, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_random_k5, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_random_k11, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_random_k15, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_random_k21, prop.chisq = FALSE)
+```
+### Resultado.
+Los resultados obtenidos llaman poderosamente la atencion ya que uno pensaría que al incluir pacientes que fueron utilizados para entrenar el modelo, en el grupo de test, los resultados serian sustancialemente mejores que la corrida previa (en la que se utilizaron pacientes fuera del grupo training). Sin embargo los resultados fueron todo lo opuesto, mostrando resultados peores para todos los valores de k probados.
 

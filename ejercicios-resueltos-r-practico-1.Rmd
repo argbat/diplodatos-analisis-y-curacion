@@ -1,0 +1,159 @@
+---
+title: "ejercicios-resultos-r-practico-1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Practico 1 de la clase del 19 de mayo grupo alfa.
+
+# Carga y limpieza.
+
+```{r}
+data <- read.csv("http://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data",header=FALSE)
+```
+
+Nombres de columnas.
+```{r columnas}
+names(data)
+```
+
+Removemos priemra columna que es un atributo de identificacion.
+```{r}
+data <- data[-1]
+```
+
+Medidas de resumen del dataset.
+``` {r}
+summary(data)
+```
+
+La Columna "V2" con valores "B" y "M" son los labels de cada observacion.
+
+Contamos cantidad de observaciones que tengan almenos un atributo en NA.
+```{r}
+sum(!complete.cases(data))
+```
+
+## Ejrcicio 1. 
+## Mejore el rendimiento utilizando una normalizacion con z-scores provista por la funcion scale() de R.
+
+### Primero armamos con minmax y luego lo evaluamos.
+
+Normalizamos los valores con minmax.
+```{r echo=TRUE}
+normalize_minmax <- function(x) {
+  return ((x-min(x))/(max(x)-min(x)))
+}
+```
+
+Vemos si estamos bien.
+```{r echo=TRUE}
+normalize_minmax(c(1,2,3,4,5))
+normalize_minmax(c(10,20,30,40,50))
+```
+
+Aplicamos la normalizacion al conjunto de datos.
+```{r echo=TRUE}
+data_n_minmax <- as.data.frame(lapply(data[2:31], normalize_minmax))
+summary(data_n_minmax$V3)
+summary(data_n_minmax$V8)
+```
+
+Dividimos el conjunto de datos en datos para entrenar y datos para validar.
+```{r echo=TRUE}
+data_n_minmax_train <- data_n_minmax[1:469, ]
+data_n_minmax_test  <- data_n_minmax[470:569, ] 
+```
+
+```{r echo=TRUE}
+data_n_minmax_train_labels <- data[1:469, 1]
+data_n_minmax_test_labels  <- data[470:569, 1]
+```
+
+Aplicamos knn.
+```{r echo=TRUE}
+library(class)
+data_minmax_test_pred <- knn(train=data_n_minmax_train, test=data_n_minmax_test, cl=data_n_minmax_train_labels, k=21)
+```
+
+### Ahora vamos con z-score y luego lo evaluamos.
+
+Normalizamos los valores con z-score
+```{r echo=TRUE}
+normalize_minmax <- function(x) {
+  return (as.dataframe(scale(x)))
+}
+```
+
+Vemos si estamos bien.
+```{r echo=TRUE}
+normalize_std(c(1,2,3,4,5))
+normalize_std(c(10,20,30,40,50))
+```
+
+Aplicamos la normalizacion al conjunto de datos.
+```{r echo=TRUE}
+data_n_std <- as.data.frame(lapply(data[2:31], normalize_std))
+summary(data_n_std$V3)
+summary(data_n_std$V8)
+```
+
+Dividimos el conjunto de datos en datos para entrenar y datos para validar.
+```{r echo=TRUE}
+data_n_std_train <- data_n_std[1:469, ]
+data_n_std_test  <- data_n_std[470:569, ] 
+```
+
+```{r echo=TRUE}
+data_n_std_train_labels <- data[1:469, 1]
+data_n_std_test_labels  <- data[470:569, 1]
+```
+
+Aplicamos knn.
+```{r echo=TRUE}
+library(class)
+data_std_test_pred <- knn(train=data_n_std_train, test=data_n_std_test, cl=data_n_std_train_labels, k=21)
+```
+
+Evaluamos datos predicho contra datos reales tanto para minmax como para z-score.
+```{r echo=TRUE}
+library(gmodels)
+CrossTable(x=data_n_minmax_test_labels, y=data_minmax_test_pred, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred, prop.chisq = FALSE)
+```
+
+### Resultado.
+No vemos mejoras con solo normalizar con z-score.
+
+## Ejercicio 2. 
+### Pruebe algunos valores alternativos de k=1, 5,  11, 15, 21 y seleccione el mejor valor de k.
+
+Aplicamos knn.
+```{r echo=TRUE}
+library(class)
+data_std_test_pred_k1 <- knn(train=data_n_std_train, test=data_n_std_test, cl=data_n_std_train_labels, k=1)
+data_std_test_pred_k5 <- knn(train=data_n_std_train, test=data_n_std_test, cl=data_n_std_train_labels, k=5)
+data_std_test_pred_k11 <- knn(train=data_n_std_train, test=data_n_std_test, cl=data_n_std_train_labels, k=11)
+data_std_test_pred_k15 <- knn(train=data_n_std_train, test=data_n_std_test, cl=data_n_std_train_labels, k=15)
+data_std_test_pred_k21 <- knn(train=data_n_std_train, test=data_n_std_test, cl=data_n_std_train_labels, k=21)
+```
+
+Evaluamos datos predicho contra datos reales tanto para minmax como para z-score.
+```{r echo=TRUE}
+library(gmodels)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_k1, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_k5, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_k11, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_k15, prop.chisq = FALSE)
+CrossTable(x=data_n_std_test_labels, y=data_std_test_pred_k21, prop.chisq = FALSE)
+```
+
+### Resultado.
+Observamos que con k=15 y k=21 se obtienen los mejores valores en la matriz de confusion, o sea, los valorems mas altos en la diagonal (Positivos-Verdaderos) y los mas bajos en el resto (Negativos-Falsos).
+
+## Ejercicio 3.
+### Mientras termina su merecido cafe verifique si el resultado cambia utilizando paciente elegidos aleatoriamente para el conjunto de validacion.
+

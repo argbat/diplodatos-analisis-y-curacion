@@ -89,7 +89,7 @@ data_minmax_test_pred <- knn(train=data_n_minmax_train, test=data_n_minmax_test,
 Normalizamos los valores con z-score
 ```{r echo=TRUE}
 normalize_std <- function(x) {
-  return (as.data.frame(scale(x)))
+  return (x - mean(x)) / (sd(x))
 }
 ```
 

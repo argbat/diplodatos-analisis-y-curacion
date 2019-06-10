@@ -1,0 +1,145 @@
+---
+title: "ejercicios-resueltos-r-practico-2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Clase 19 Mayo -- Practico 2
+
+Para trabajar elegimos el dataset correspondiente a la precios de casas en california.
+Este dataset establece puede usarse para explorar la relación entre los precios de las 
+casas con la longitud, latitud, cantidad de habitaciones, proximidad al oceano, etc.
+
+## Leyendo y explorando los datos
+
+```{r}
+options(repr.plot.width=6, repr.plot.height=4)
+data <- read.csv("input/housing.csv")
+data[1:5,]
+```
+
+```{r}
+summary(data)
+```
+
+```{r}
+names(data)
+```
+
+```{r}
+sapply(data, class)
+```
+
+```{r}
+corr_matrix <- cor(data[1:9])
+corr_matrix
+```
+
+Vemos que la "median house value" tiene buena correlación con "median income" y con "total bedrooms"
+
+```{r}
+library("ggplot2")
+```
+
+Creamos 4 categorias de precios
+
+```{r}
+max(data$median_house_value)
+```
+
+```{r}
+data$value_cat = round(data$median_house_value / max(data$median_house_value) * 3) + 1
+data$value_cat <- as.factor(data$value_cat)
+summary(data$value_cat)
+```
+
+Gráficamos las categorías que creamos usando como ejes "median income" y "total rooms"
+
+```{r}
+ggplot(data, aes(x=median_income, y=total_rooms, color=data$value_cat)) +
+  geom_point(alpha = 0.2)
+```
+
+Vamos a aplciar un metodo de clustering para que nos diga como es la cercania al oceano de cada punto
+
+```{r}
+names(data)
+```
+```{r}
+head(data)
+```
+```{r}
+library(mclust)
+```
+```{r}
+data$ocean_proximity_cat <- as.numeric(data$ocean_proximity)
+summary(data$ocean_proximity_cat)
+```
+
+```{r}
+set.seed(20)
+cluster <- kmeans(data[, c(1:3,6,9)], 4, nstart = 10)
+cluster$size
+```
+```{r}
+cluster$cluster <- as.factor(cluster$cluster)
+
+ggplot(data, aes(x=median_income, y=total_rooms, color=cluster$cluster)) +
+  geom_point(alpha = 0.2)
+```
+
+Si bien la divisiones no son tan claras como las generadas a partir de los datos reales, si se nota una tendencia en las division al hacer el clusterizado
+El meta parametro k nos establece la cantidad grupos que vamos a generar, y podríamos obtener más escalones en la escala de precios. Vemos ejemplos con K=2 y K=10
+
+```{r}
+set.seed(20)
+cluster <- kmeans(data[, c(1:3,6,9)], 2, nstart = 10)
+
+cluster$cluster <- as.factor(cluster$cluster)
+ggplot(data, aes(x=median_income, y=total_rooms, color=cluster$cluster)) +
+  geom_point(alpha = 0.2)
+```
+```{r}
+set.seed(20)
+cluster <- kmeans(data[, c(1:3,6,9)], 8, nstart = 10)
+
+cluster$cluster <- as.factor(cluster$cluster)
+ggplot(data, aes(x=median_income, y=total_rooms, color=cluster$cluster)) +
+  geom_point(alpha = 0.2)
+```
+
+Para determinar el mejor valor de K, lo mejor es recurrir al experto a dominio para que nos ayude a determinar ese valor de acuerdo a las categorías esperadas. Otra alternativa es hacerlo iterativamente luego de aplicar un algoritmo de machine learning, viendo que valores ayudan más al mismo
+
+## Normalización
+
+```{r}
+minmax_norm <- function(x){
+    return ((x-min(x))/(max(x) - min(x)))
+}
+data_n <- as.data.frame(lapply(data[,c(1:3,6,9)], minmax_norm))
+set.seed(20)
+cluster <- kmeans(data_n, 4, nstart = 10)
+
+cluster$cluster <- as.factor(cluster$cluster)
+ggplot(data, aes(x=median_income, y=total_rooms, color=cluster$cluster)) +
+  geom_point(alpha = 0.2)
+```
+
+
+```{r}
+z_norm <- function(x){
+    return ((x-mean(x))/(sd(x)))
+}
+data_n2 <- as.data.frame(lapply(data[,c(1:3,6,9)], z_norm))
+set.seed(20)
+cluster <- kmeans(data_n2, 4, nstart = 10)
+
+cluster$cluster <- as.factor(cluster$cluster)
+ggplot(data, aes(x=median_income, y=total_rooms, color=cluster$cluster)) +
+  geom_point(alpha = 0.2)
+```
+
+Vemos con en estos casos la normalización de las variables tiende a mezclar un poco mas las clases si lo comparamos contra las clases obtenidas de los datos. Esto es algo que no esperabamos.
